@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>834</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="2">
+     <widget class="QRadioButton" name="isTrimmingSides">
+      <property name="text">
+       <string>Trim Sides</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="previous">
+      <property name="text">
+       <string>&lt;</string>
+      </property>
+      <property name="shortcut">
+       <string>Left</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QRadioButton" name="isTrimmingTop">
+      <property name="text">
+       <string>Trim Top and Bottom</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="5">
+     <widget class="QRadioButton" name="isPaddingTop">
+      <property name="text">
+       <string>Pad Top and Bottom</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="4">
+     <widget class="QRadioButton" name="isPaddingSides">
+      <property name="text">
+       <string>Pad Sides</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="6">
+     <widget class="QPushButton" name="next">
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+      <property name="shortcut">
+       <string>Right</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Aspect:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLineEdit" name="aspect">
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string>1.0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="5">
+     <widget class="QProgressBar" name="progress">
+      <property name="value">
+       <number>24</number>
+      </property>
+      <property name="textVisible">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2" colspan="4">
+     <widget class="QFrame" name="preview_frame">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <spacer name="left_spacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>10</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="1">
+        <widget class="QGraphicsView" name="preview">
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <spacer name="top_spacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="1" column="2">
+        <spacer name="right_spacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>10</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="1">
+        <spacer name="bottom_spacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>10</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>834</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="action_open_source"/>
+    <addaction name="action_save_target"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_open_source">
+   <property name="text">
+    <string>&amp;Open Source...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_save_target">
+   <property name="text">
+    <string>Open Target...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+ </widget>
+ <tabstops>
+  <tabstop>previous</tabstop>
+  <tabstop>next</tabstop>
+  <tabstop>isTrimmingSides</tabstop>
+  <tabstop>isTrimmingTop</tabstop>
+  <tabstop>isPaddingSides</tabstop>
+  <tabstop>isPaddingTop</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
