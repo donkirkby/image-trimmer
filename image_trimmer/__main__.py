@@ -68,7 +68,7 @@ class ImageTrimmerWindow(QMainWindow):
             f'Cropping from {self.source_path.name}{target_summary}.')
 
         self.source_image_paths.clear()
-        for source_image_path in self.source_path.glob('*'):
+        for source_image_path in sorted(self.source_path.glob('*')):
             self.source_image_paths.append(source_image_path)
         ui.progress.setMaximum(len(self.source_image_paths))
         ui.progress.setValue(0)
@@ -118,7 +118,21 @@ class ImageTrimmerWindow(QMainWindow):
         ui = self.ui
         if text is None:
             text = ui.aspect.text()
-        self.aspect_ratio = float(text)
+        if not text:
+            return
+        aspect_ratio = abs(float(text))
+        if aspect_ratio == 0:
+            return
+        min_aspect_ratio = 0.2
+        max_aspect_ratio = 7.0
+        if aspect_ratio < min_aspect_ratio:
+            aspect_ratio = min_aspect_ratio
+            ui.aspect.setText(str(aspect_ratio))
+        elif max_aspect_ratio < aspect_ratio:
+            aspect_ratio = max_aspect_ratio
+            ui.aspect.setText(str(aspect_ratio))
+
+        self.aspect_ratio = aspect_ratio
         frame_width = ui.preview_frame.width()
         frame_height = ui.preview_frame.height()
         ideal_width = self.aspect_ratio * frame_height
@@ -151,6 +165,12 @@ class ImageTrimmerWindow(QMainWindow):
         self.pixmap_item.setY((frame_height-scaled_pixmap.height()) // 2)
         self.pixmap_item.move_delta = 0
         self.pixmap_item.is_x_pinned = frame_height < scaled_pixmap.height()
+        if self.pixmap_item.is_x_pinned:
+            min_move = ui.preview.height() - scaled_pixmap.height()
+        else:
+            min_move = ui.preview.width() - scaled_pixmap.width()
+        self.pixmap_item.max_move = 0
+        self.pixmap_item.min_move = min_move
 
     def set_padding(self,
                     total_padding: int,
