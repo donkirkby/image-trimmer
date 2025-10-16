@@ -1,18 +1,47 @@
+import typing
+from typing import runtime_checkable
+
 from PySide6 import QtCore
 from PySide6.QtWidgets import QGraphicsPixmapItem
 
 
 class ImageItem(QGraphicsPixmapItem):
-    def __init__(self, *args, **kwargs):
+    @runtime_checkable
+    class Listener(typing.Protocol):
+        def on_image_moved(self):
+            ...
+
+    def __init__(self, listener: Listener | None = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFlag(self.GraphicsItemFlag.ItemIsMovable)
+        self.listener = listener
         self.is_x_pinned = True
         self.pinned_start = 0
         self.move_start = 0
-        self.move_delta = 0
-        self.move_ratio = 0
+        self.move_percent = 0
         self.min_move = 0
         self.max_move = 0
+        self.is_dirty = False
+
+    def setX(self, x, /) -> None:
+        super().setX(x)
+        if not self.is_x_pinned:
+            self.calculate_percent()
+
+    def setY(self, y, /) -> None:
+        super().setY(y)
+        if self.is_x_pinned:
+            self.calculate_percent()
+
+    def calculate_percent(self) -> None:
+        if self.is_x_pinned:
+            move_delta = -self.y()
+        else:
+            move_delta = -self.x()
+        move_ratio = move_delta / (self.max_move - self.min_move)
+
+        # Not quite percent, cap at two digits.
+        self.move_percent = round(move_ratio * 99)
 
     def mousePressEvent(self, event):
         if self.is_x_pinned:
@@ -49,10 +78,6 @@ class ImageItem(QGraphicsPixmapItem):
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        position = event.scenePos()
-        if self.is_x_pinned:
-            self.move_delta += position.y() - self.move_start
-            self.move_ratio = self.move_delta / self.pixmap().height()
-        else:
-            self.move_delta += position.x() - self.move_start
-            self.move_ratio = self.move_delta / self.pixmap().width()
+        self.calculate_percent()
+        if self.listener:
+            self.listener.on_image_moved()

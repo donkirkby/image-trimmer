@@ -31,7 +31,7 @@ class ImageTrimmerWindow(QMainWindow):
         self.scene = QGraphicsScene(0, 0, 400, 200)
         ui.preview.setScene(self.scene)
         self.raw_pixmap = QPixmap()
-        self.pixmap_item = ImageItem()
+        self.pixmap_item = ImageItem(self)
         self.scene.addItem(self.pixmap_item)
 
         self.source_path: Path | None = None
@@ -157,20 +157,26 @@ class ImageTrimmerWindow(QMainWindow):
                              ui.right_spacer)
         if self.raw_pixmap.width() == 0:
             return
+        preview_width = ui.preview.width()
+        preview_height = ui.preview.height()
         scaled_pixmap = self.raw_pixmap.scaled(
-            QSize(frame_width, frame_height),
+            QSize(preview_width, preview_height),
             aspectMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding)
         self.pixmap_item.setPixmap(scaled_pixmap)
-        self.pixmap_item.setX((frame_width-scaled_pixmap.width()) // 2)
-        self.pixmap_item.setY((frame_height-scaled_pixmap.height()) // 2)
-        self.pixmap_item.move_delta = 0
-        self.pixmap_item.is_x_pinned = frame_height < scaled_pixmap.height()
+        self.pixmap_item.is_x_pinned = (
+                preview_height < scaled_pixmap.height())
         if self.pixmap_item.is_x_pinned:
-            min_move = ui.preview.height() - scaled_pixmap.height()
+            min_move = preview_height - scaled_pixmap.height()
         else:
-            min_move = ui.preview.width() - scaled_pixmap.width()
+            min_move = preview_width - scaled_pixmap.width()
         self.pixmap_item.max_move = 0
         self.pixmap_item.min_move = min_move
+        self.pixmap_item.setX((preview_width-scaled_pixmap.width()) // 2)
+        self.pixmap_item.setY((preview_height-scaled_pixmap.height()) // 2)
+        self.save_image()
+
+    def on_image_moved(self):
+        self.save_image()
 
     def set_padding(self,
                     total_padding: int,
@@ -186,6 +192,42 @@ class ImageTrimmerWindow(QMainWindow):
         squeezed1.changeSize(0, 0, fixed, fixed)
         squeezed2.changeSize(0, 0, fixed, fixed)
         self.ui.preview_frame.layout().invalidate()
+
+    def save_image(self):
+        if not self.target_path:
+            return
+        self.purge_target_images()
+        ui = self.ui
+        image_index = ui.progress.value() - 1
+        source_image_path = self.source_image_paths[image_index]
+        move_percent = self.pixmap_item.move_percent
+        source_stem = source_image_path.stem
+        suffix = source_image_path.suffix
+        target_name = f'{source_stem}-{move_percent:02}-{image_index}{suffix}'
+        target_image_path = self.target_path / target_name
+        if self.pixmap_item.is_x_pinned:
+            width = self.raw_pixmap.width()
+            height = round(width / self.aspect_ratio)
+            y0 = round((self.raw_pixmap.height() - height) * move_percent / 99)
+            cropped_pixmap = self.raw_pixmap.copy(0, y0, width, height)
+        else:
+            height = self.raw_pixmap.height()
+            width = round(height * self.aspect_ratio)
+            x0 = round((self.raw_pixmap.width() - width) * move_percent / 99)
+            cropped_pixmap = self.raw_pixmap.copy(x0, 0, width, height)
+        cropped_pixmap.save(str(target_image_path))
+
+        ui.statusbar.showMessage(
+            f'Saved {self.source_path.name}/{source_image_path.name} as '
+            f'{self.target_path}/{target_name}.')
+        self.pixmap_item.is_dirty = False
+
+    def purge_target_images(self):
+        image_index = self.ui.progress.value() - 1
+        stem_suffix = f'-{image_index}'
+        for target_match in self.target_path.glob(f'*{stem_suffix}.*'):
+            if target_match.stem.endswith(stem_suffix):
+                target_match.unlink()
 
     def resizeEvent(self, event):
         self.on_aspect_changed()

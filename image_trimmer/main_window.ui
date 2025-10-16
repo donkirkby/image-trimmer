@@ -15,88 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="2">
-     <widget class="QRadioButton" name="isTrimmingSides">
-      <property name="text">
-       <string>Trim Sides</string>
-      </property>
-      <property name="checked">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QPushButton" name="previous">
-      <property name="text">
-       <string>&lt;</string>
-      </property>
-      <property name="shortcut">
-       <string>Left</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="3">
-     <widget class="QRadioButton" name="isTrimmingTop">
-      <property name="text">
-       <string>Trim Top and Bottom</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="5">
-     <widget class="QRadioButton" name="isPaddingTop">
-      <property name="text">
-       <string>Pad Top and Bottom</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="4">
-     <widget class="QRadioButton" name="isPaddingSides">
-      <property name="text">
-       <string>Pad Sides</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="6">
-     <widget class="QPushButton" name="next">
-      <property name="text">
-       <string>&gt;</string>
-      </property>
-      <property name="shortcut">
-       <string>Right</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>Aspect:</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QLineEdit" name="aspect">
-      <property name="inputMask">
-       <string/>
-      </property>
-      <property name="text">
-       <string>1.0</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="5">
-     <widget class="QProgressBar" name="progress">
-      <property name="value">
-       <number>24</number>
-      </property>
-      <property name="textVisible">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2" colspan="4">
+    <item row="0" column="2" colspan="3">
      <widget class="QFrame" name="preview_frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
@@ -115,7 +34,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>10</width>
+           <width>2</width>
            <height>20</height>
           </size>
          </property>
@@ -123,6 +42,9 @@
        </item>
        <item row="1" column="1">
         <widget class="QGraphicsView" name="preview">
+         <property name="focusPolicy">
+          <enum>Qt::NoFocus</enum>
+         </property>
          <property name="verticalScrollBarPolicy">
           <enum>Qt::ScrollBarAlwaysOff</enum>
          </property>
@@ -141,8 +63,8 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>0</width>
-           <height>10</height>
+           <width>20</width>
+           <height>2</height>
           </size>
          </property>
         </spacer>
@@ -157,7 +79,7 @@
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>10</width>
+           <width>2</width>
            <height>20</height>
           </size>
          </property>
@@ -174,12 +96,82 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>10</height>
+           <height>2</height>
           </size>
          </property>
         </spacer>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="previous">
+      <property name="text">
+       <string>&lt;</string>
+      </property>
+      <property name="shortcut">
+       <string>Left</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLineEdit" name="aspect">
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="text">
+       <string>1.0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5">
+     <widget class="QPushButton" name="next">
+      <property name="text">
+       <string>&gt;</string>
+      </property>
+      <property name="shortcut">
+       <string>Right</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="4">
+     <widget class="QProgressBar" name="progress">
+      <property name="value">
+       <number>24</number>
+      </property>
+      <property name="textVisible">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="aspect_label">
+      <property name="text">
+       <string>Aspect:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3" colspan="2">
+     <widget class="QSlider" name="bar_slider">
+      <property name="maximum">
+       <number>9</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="bar_label">
+      <property name="text">
+       <string>Bars:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
      </widget>
     </item>
    </layout>
@@ -190,7 +182,7 @@
      <x>0</x>
      <y>0</y>
      <width>834</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -222,11 +214,10 @@
  </widget>
  <tabstops>
   <tabstop>previous</tabstop>
+  <tabstop>preview</tabstop>
   <tabstop>next</tabstop>
-  <tabstop>isTrimmingSides</tabstop>
-  <tabstop>isTrimmingTop</tabstop>
-  <tabstop>isPaddingSides</tabstop>
-  <tabstop>isPaddingTop</tabstop>
+  <tabstop>bar_slider</tabstop>
+  <tabstop>aspect</tabstop>
  </tabstops>
  <resources/>
  <connections/>
