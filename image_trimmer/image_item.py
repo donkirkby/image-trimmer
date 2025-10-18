@@ -21,7 +21,6 @@ class ImageItem(QGraphicsPixmapItem):
         self.move_percent = 0
         self.min_move = 0
         self.max_move = 0
-        self.is_dirty = False
 
     def setX(self, x, /) -> None:
         super().setX(x)
@@ -38,7 +37,11 @@ class ImageItem(QGraphicsPixmapItem):
             move_delta = -self.y()
         else:
             move_delta = -self.x()
-        move_ratio = move_delta / (self.max_move - self.min_move)
+        max_delta = self.max_move - self.min_move
+        if max_delta == 0:
+            move_ratio = 0.0
+        else:
+            move_ratio = move_delta / (self.max_move - self.min_move)
 
         # Not quite percent, cap at two digits.
         self.move_percent = round(move_ratio * 99)

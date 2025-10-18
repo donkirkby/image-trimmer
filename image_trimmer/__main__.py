@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PySide6 import QtGui
 from PySide6.QtCore import QSize, QTimer
-from PySide6.QtGui import QPixmap, Qt
+from PySide6.QtGui import QPixmap, Qt, QColorConstants, QPainter
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QGraphicsScene, QSpacerItem, QSizePolicy
 
 from image_trimmer.image_item import ImageItem
@@ -26,6 +26,7 @@ class ImageTrimmerWindow(QMainWindow):
         ui.previous.setEnabled(False)
         ui.aspect.setValidator(QtGui.QDoubleValidator())
         ui.aspect.textChanged.connect(self.on_aspect_changed)
+        ui.bar_slider.valueChanged.connect(self.on_bar_changed)
         ui.statusbar.showMessage('Choose source and target folders.')
 
         self.scene = QGraphicsScene(0, 0, 400, 200)
@@ -159,21 +160,57 @@ class ImageTrimmerWindow(QMainWindow):
             return
         preview_width = ui.preview.width()
         preview_height = ui.preview.height()
-        scaled_pixmap = self.raw_pixmap.scaled(
+        small_scaled_pixmap = self.raw_pixmap.scaled(
             QSize(preview_width, preview_height),
-            aspectMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding)
-        self.pixmap_item.setPixmap(scaled_pixmap)
+            aspectMode=Qt.AspectRatioMode.KeepAspectRatio)
         self.pixmap_item.is_x_pinned = (
-                preview_height < scaled_pixmap.height())
+                small_scaled_pixmap.width() < preview_width)
         if self.pixmap_item.is_x_pinned:
+            scaled_pixmap = self.pad_left_right(preview_width,
+                                                preview_height,
+                                                small_scaled_pixmap.width())
             min_move = preview_height - scaled_pixmap.height()
         else:
+            # bars on top and bottom
+            scaled_pixmap = self.pad_top_bottom(preview_width,
+                                                preview_height,
+                                                small_scaled_pixmap.height())
             min_move = preview_width - scaled_pixmap.width()
+        self.pixmap_item.setPixmap(scaled_pixmap)
         self.pixmap_item.max_move = 0
         self.pixmap_item.min_move = min_move
         self.pixmap_item.setX((preview_width-scaled_pixmap.width()) // 2)
         self.pixmap_item.setY((preview_height-scaled_pixmap.height()) // 2)
         self.save_image()
+
+    def pad_top_bottom(self, target_width: int, target_height: int, min_height: int) -> QPixmap:
+        max_bar_width = (target_height - min_height) // 2
+        bar_width = max_bar_width * self.ui.bar_slider.value() // 9
+        scaled_pixmap_no_bars = self.raw_pixmap.scaled(
+            QSize(target_width, target_height - 2 * bar_width),
+            aspectMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        scaled_pixmap = QPixmap(scaled_pixmap_no_bars.width(), target_height)
+        scaled_pixmap.fill(QColorConstants.Black)
+        painter = QPainter(scaled_pixmap)
+        painter.drawPixmap(0, bar_width, scaled_pixmap_no_bars)
+        painter.end()
+        return scaled_pixmap
+
+    def pad_left_right(self, target_width: int, target_height: int, min_width: int) -> QPixmap:
+        max_bar_width = (target_width - min_width) // 2
+        bar_width = max_bar_width * self.ui.bar_slider.value() // 9
+        scaled_pixmap_no_bars = self.raw_pixmap.scaled(
+            QSize(target_width - 2 * bar_width, target_height),
+            aspectMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding)
+        scaled_pixmap = QPixmap(target_width, scaled_pixmap_no_bars.height())
+        scaled_pixmap.fill(QColorConstants.Black)
+        painter = QPainter(scaled_pixmap)
+        painter.drawPixmap(bar_width, 0, scaled_pixmap_no_bars)
+        painter.end()
+        return scaled_pixmap
+
+    def on_bar_changed(self):
+        self.on_aspect_changed()
 
     def on_image_moved(self):
         self.save_image()
@@ -205,22 +242,51 @@ class ImageTrimmerWindow(QMainWindow):
         suffix = source_image_path.suffix
         target_name = f'{source_stem}-{move_percent:02}-{image_index}{suffix}'
         target_image_path = self.target_path / target_name
+        image_width = self.raw_pixmap.width()
+        image_height = self.raw_pixmap.height()
+        slider_max = ui.bar_slider.maximum()
+        slider_value = ui.bar_slider.value()
         if self.pixmap_item.is_x_pinned:
-            width = self.raw_pixmap.width()
+            if slider_value == 0:
+                padded_pixmap = self.raw_pixmap
+            else:
+                # bars left and right
+                target_width = round(image_width * slider_max / slider_value /
+                                     (slider_max/slider_value - 1 +
+                                      image_width/image_height/self.aspect_ratio))
+                target_height = round(target_width / self.aspect_ratio)
+                min_width = round(target_height * image_width / image_height)
+                padded_pixmap = self.pad_left_right(target_width,
+                                                    target_height,
+                                                    min_width)
+
+            width = padded_pixmap.width()
             height = round(width / self.aspect_ratio)
-            y0 = round((self.raw_pixmap.height() - height) * move_percent / 99)
-            cropped_pixmap = self.raw_pixmap.copy(0, y0, width, height)
+            y0 = round((padded_pixmap.height() - height) * move_percent / 99)
+            cropped_pixmap = padded_pixmap.copy(0, y0, width, height)
         else:
-            height = self.raw_pixmap.height()
+            if slider_value == 0:
+                padded_pixmap = self.raw_pixmap
+            else:
+                # bars top and bottom
+                target_height = round(image_height * slider_max / slider_value /
+                                     (slider_max/slider_value - 1 +
+                                      image_height/image_width*self.aspect_ratio))
+                target_width = round(target_height * self.aspect_ratio)
+                min_height = round(target_width * image_height / image_width)
+                padded_pixmap = self.pad_top_bottom(target_width,
+                                                    target_height,
+                                                    min_height)
+
+            height = padded_pixmap.height()
             width = round(height * self.aspect_ratio)
-            x0 = round((self.raw_pixmap.width() - width) * move_percent / 99)
-            cropped_pixmap = self.raw_pixmap.copy(x0, 0, width, height)
+            x0 = round((padded_pixmap.width() - width) * move_percent / 99)
+            cropped_pixmap = padded_pixmap.copy(x0, 0, width, height)
         cropped_pixmap.save(str(target_image_path))
 
         ui.statusbar.showMessage(
             f'Saved {self.source_path.name}/{source_image_path.name} as '
             f'{self.target_path}/{target_name}.')
-        self.pixmap_item.is_dirty = False
 
     def purge_target_images(self):
         image_index = self.ui.progress.value() - 1
